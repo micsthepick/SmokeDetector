@@ -1578,6 +1578,33 @@ def test(content, alias_used="test"):
     return result
 
 
+# noinspection PyIncorrectDocstring
+@command(str, aliases=["testfromurl-q", "testfromurl-question", "testfromurl-a",
+                       "testfromurl-answer", "testfromurl-u", "test-user",
+                       "testfromurl-t", "testfromurl-title",
+                       "testfromurl-j", "testfromurl-json"],
+         give_name=True)
+def testfromurl(content, alias_used="test"):
+    """
+    Test content provided in chat (by link) to determine if it'd be automatically reported
+    :param content:
+    :return: A string
+    """
+
+    if '://' not in content:
+        content = 'https://' + content
+
+    try:
+        res = requests.get(content, timeout=GlobalVars.default_requests_timeout)
+    except Exception as e:
+        raise CmdException("Error: {}".format(e))
+
+    if res.ok:
+        return test(res.text, alias_used)
+
+    raise CmdException("Error {}: in provided url: {}".format(res.status_code, content))
+
+
 def bisect_regex(test_text, regexes, bookend=True, timeout=None, force_log_time=False):
     entries = [r for r, i in regexes]
     if bookend:
